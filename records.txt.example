@@ -1,0 +1,14 @@
+
+# Upstream servers
+nameserver 1.1.1.1
+nameserver 1.0.0.1
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+
+# Proxy example.com to these, ordered by priority
+ns example.com 1.2.3.4
+ns example.com 2.3.4.5
+ns example.com 3.4.5.6
+
+# Route the .dev tld to localhost
+a .dev 127.0.0.1
