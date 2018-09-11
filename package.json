@@ -6,8 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Robin Bron <robin@finwo.nl>",
+  "license": "MIT",
+  "bin": {
+    "dnsman": "./dnsman.js"
+  },
   "dependencies": {
     "native-dns-packet": "^0.1.1",
     "query-string": "^6.1.0",
