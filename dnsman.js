@@ -4,31 +4,46 @@
 process.on('unhandledRejection', console.error);
 
 // Load dependencies
-const dgram   = require('dgram'),
-      fs      = require('fs'),
-      noop    = () => {},
-      packet  = require('native-dns-packet'),
-      qs      = require('query-string'),
-      rc      = require('rc'),
-      sprintf = require('sprintf-js').sprintf,
-      util    = require('./util');
+const dgram    = require('dgram'),
+      fs       = require('fs'),
+      minimist = require('minimist'),
+      noop     = () => {},
+      packet   = require('native-dns-packet'),
+      qs       = require('query-string'),
+      rc       = require('rc'),
+      sprintf  = require('sprintf-js').sprintf,
+      util     = require('./util'),
+      argv     = require('minimist')(process.argv.slice(2));
 
 // Default configuration
 const defaults = {
-  port            : process.env.PORT || 53,
-  host            : '127.0.0.1',
-  debug           : true,
+  port            : argv.port || argv.p || process.env.PORT || 53,
+  host            : argv.host || argv.a || '127.0.0.1',
+  debug           : argv.debug || false,
   nameservers     : [],
-  recordfile      : './records.txt',
+  recordfile      : argv.records || argv.r || '/etc/dnsman/records',
   fallback_timeout: 350,
   reload_config   : false,
 };
+
+// Usage
+if ( argv.help || argv.h ) {
+  console.log('Usage:',process.argv[1].split('/').pop(),'[options]');
+  console.log('');
+  console.log('Options:');
+  console.log('   -p --port      Port number to listen on (default: 53)');
+  console.log('   -a --host      Address to listen on (default: 127.0.0.1)');
+  console.log('   -r --records   Specify records file (default: /etc/dnsman/records)');
+  console.log('   -h --help      Show this help text');
+  process.exit(0);
+}
 
 // Load the config
 let config = rc('dnsman', defaults),
     records = [];
 loadRecords();
 
+// Record loader
 function loadRecords( contents ) {
 
   const handler = {

@@ -12,6 +12,7 @@
     "dnsman": "./dnsman.js"
   },
   "dependencies": {
+    "minimist": "^1.2.0",
     "native-dns-packet": "^0.1.1",
     "query-string": "^6.1.0",
     "rc": "^1.2.8",
