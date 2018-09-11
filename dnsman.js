@@ -89,6 +89,26 @@ if (config.reload_config) {
   });
 }
 
+function groupAddresses( output, record ) {
+  switch( util.records[record.type] ) {
+    case 'NS':
+      output.push(record);
+      break;
+    default:
+      if ( (output.length === 0) ) {
+        output.push([record]);
+      } else if ( !Array.isArray(output[output.length-1]) ) {
+        output.push([record]);
+      } else if ( output[output.length-1][0].type !== record.type ) {
+        output.push([record]);
+      } else {
+        output[output.length-1].push(record);
+      }
+      break;
+  }
+  return output;
+}
+
 // Setup the server
 const server = dgram.createSocket('udp4');
 server.on('listening', () => {
@@ -101,45 +121,42 @@ server.on('error', (err) => {
 server.on('message', async (message, rinfo) => {
   const query    = packet.parse(message),
         question = query.question[0],
-        matches  = util.filterRecords(records,question).concat(config.nameservers);
+        matches  = util.filterRecords(records,question)
+          .reduce(groupAddresses,[])
+          .concat(config.nameservers);
 
   (function next() {
     let match = matches.shift();
     if(!match) return;
+    console.log(match);
 
-    switch(util.records[match.type]) {
-      case 'NS': // Proxy
-        let nParts = match.srv.split(':'),
-            ns     = nParts[0],
-            port   = nParts[1] || 53,
-            fallback,toolate = false;
-        (function queryns( msg, ns ) {
-          const sock = dgram.createSocket('udp4');
-          sock.send(msg,0,msg.length,port,ns,() => {
-            fallback = setTimeout(() => {
-              toolate = true;
-              next();
-            },config.fallback_timeout);
-          });
-          sock.on('error', (err) => {
-            logerror('Sock err: %s',err);
-          });
-          sock.on('message', (resp) => {
-            if(toolate) return;
-            clearTimeout(fallback);
-            server.send(resp,0,resp.length,rinfo.port,rinfo.address);
-            sock.close();
-          })
-        })(message,ns);
-        break;
-      case 'A': // We know the domain
-        match.address = match.address || match.srv;
-        let res = util.compileAnswer(query,question,match);
-        server.send( res, 0, res.length, rinfo.port, rinfo.address );
-        break;
-      default:
-        next();
-        break;
+    if(!Array.isArray(match)) { // NS
+      let nParts = match.srv.split(':'),
+          ns     = nParts[0],
+          port   = nParts[1] || 53,
+          fallback,toolate = false;
+      (function queryns( msg, ns ) {
+        const sock = dgram.createSocket('udp4');
+        sock.send(msg,0,msg.length,port,ns,() => {
+          fallback = setTimeout(() => {
+            toolate = true;
+            next();
+          },config.fallback_timeout);
+        });
+        sock.on('error', (err) => {
+          logerror('Sock err: %s',err);
+        });
+        sock.on('message', (resp) => {
+          if(toolate) return;
+          clearTimeout(fallback);
+          server.send(resp,0,resp.length,rinfo.port,rinfo.address);
+          sock.close();
+        })
+      })(message,ns);
+    } else {
+      // Other
+      let res = util.compileAnswer(query,question,match);
+      server.send( res, 0, res.length, rinfo.port, rinfo.address );
     }
   })();
 

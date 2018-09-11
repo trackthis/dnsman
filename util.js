@@ -34,15 +34,16 @@ util.compileAnswer = function (query, question, answer) {
     ra: answer.ra || 1,
   });
 
-  merged.answer = [
-    {
+  let answers = Array.isArray(answer) ? answer : [answer];
+  merged.answer = answers.map( entry => {
+    return {
       'name'   : question.name,
-      'type'   : 'string' === typeof answer.type ? util.records[answer.type] : answer.type,
-      'class'  : answer['class'] || 1,
-      'ttl'    : answer.ttl || 30,
-      'address': answer.address || question.name
-    },
-  ];
+      'type'   : 'string' === typeof entry.type ? util.records[entry.type] : entry.type,
+      'class'  : entry['class'] || 1,
+      'ttl'    : entry.ttl || 30,
+      'address': entry.address || entry.srv || question.name
+    };
+  });
 
   const buf = Buffer.alloc(4096);
   const wrt = packet.write(buf, merged);
