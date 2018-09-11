@@ -128,7 +128,6 @@ server.on('message', async (message, rinfo) => {
   (function next() {
     let match = matches.shift();
     if(!match) return;
-    console.log(match);
 
     if(!Array.isArray(match)) { // NS
       let nParts = match.srv.split(':'),
