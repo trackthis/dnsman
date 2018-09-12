@@ -1,0 +1,8 @@
+[ver:1,total:3660]
+util.js:1752,1536750000:1752,m
+.gtm/terminal.app:1547,1536742800:840,1536750000:707,r
+dnsman.js:247,1536750000:247,m
+node_modules/native-dns-packet/packet.js:49,1536750000:49,r
+node_modules/native-dns-packet/index.js:30,1536750000:30,r
+node_modules/sprintf-js/src/sprintf.js:20,1536750000:20,r
+package.json:15,1536750000:15,r
