@@ -95,14 +95,15 @@ function groupAddresses( output, record ) {
       output.push(record);
       break;
     default:
-      if ( (output.length === 0) ) {
+      let written = false;
+      for ( let group of output ) {
+        if (!Array.isArray(group)) continue;
+        if ( group[0].nam !== record.nam ) continue;
+        group.push(record);
+        written = true;
+      }
+      if(!written) {
         output.push([record]);
-      } else if ( !Array.isArray(output[output.length-1]) ) {
-        output.push([record]);
-      } else if ( output[output.length-1][0].type !== record.type ) {
-        output.push([record]);
-      } else {
-        output[output.length-1].push(record);
       }
       break;
   }
