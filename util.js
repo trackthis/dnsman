@@ -55,6 +55,7 @@ util.filterRecords = function (records, question) {
     .filter(record => ((record.type === util.records['NS']) || (record.type === question.type)))
     .filter(record => question.name.lastIndexOf(record.nam) >= 0)
     .filter(record => question.name.lastIndexOf(record.nam) === (question.name.length - record.nam.length))
+    .sort( (left,right) => left.nam.length < right.nam.length ? 1 : ( left.nam.length > right.nam.length ) ? -1 : 0 )
 };
 
 // module.exports.randomElement = function( arr ) {
