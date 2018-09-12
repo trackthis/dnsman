@@ -48,18 +48,18 @@ function loadRecords( contents ) {
 
   const handler = {
     nameserver: ([srv] = []) => { config.nameservers.push({ type: util.records['NS'], srv }); },
-    ns        : ([nam, srv] = []) => { records.push({type: util.records['NS'], nam, srv}); },
-    a         : ([nam, srv] = []) => { records.push({type: util.records['A'], nam, srv}); },
+    ns        : ([nam,    srv ] = []) => { records.push({type: 'NS' , nam, srv  }); },
+    a         : ([nam,    srv ] = []) => { records.push({type: 'A'  , nam, srv  }); },
+    txt       : ([nam, ...data] = []) => { records.push({type: 'TXT', nam, data }); }
   };
 
   contents = contents || fs.readFileSync(config.recordfile,'utf-8');
   if ( contents.indexOf('\nnameserver') >= 0 ) config.nameservers = [];
   records = [];
   contents.split('\n')
-    .map( line => line.trim().replace(/\s+/g,' ') )
+    .map( line => line.split('#').shift() )
     .filter( line => line )
-    .filter( line => line.substr(0,1) !== '#' )
-    .map( line => line.split(' ') )
+    .map( util.split )
     .forEach( tokens => {
       let cmd = tokens.shift();
       (handler[cmd]||noop)(tokens);
@@ -90,7 +90,7 @@ if (config.reload_config) {
 }
 
 function groupAddresses( output, record ) {
-  switch( util.records[record.type] ) {
+  switch( record.type ) {
     case 'NS':
       output.push(record);
       break;
