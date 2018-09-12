@@ -47,10 +47,15 @@ loadRecords();
 function loadRecords( contents ) {
 
   const handler = {
+
+    // Custom record types
     nameserver: ([srv] = []) => { config.nameservers.push({ type: util.records['NS'], srv }); },
     ns        : ([nam,    srv ] = []) => { records.push({type: 'NS' , nam, srv  }); },
-    a         : ([nam,    srv ] = []) => { records.push({type: 'A'  , nam, srv  }); },
-    txt       : ([nam, ...data] = []) => { records.push({type: 'TXT', nam, data }); }
+
+    // Common record types
+    a         : ([nam,    srv ] = []) => { records.push({type: 'A'    , nam, srv  }); },
+    cname     : ([nam,    data] = []) => { records.push({type: 'CNAME', nam, data }); },
+    txt       : ([nam, ...data] = []) => { records.push({type: 'TXT'  , nam, data }); }
   };
 
   contents = contents || fs.readFileSync(config.recordfile,'utf-8');

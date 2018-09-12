@@ -24,16 +24,17 @@ util.compileAnswer = function (query, question, answer) {
     ra: answer.ra || 1,
   });
 
-  let answers = Array.isArray(answer) ? answer : [answer];
-  merged.answer = answers.map( entry => {
-    switch(entry.type) {
+  let answers   = Array.isArray(answer) ? answer : [answer];
+  merged.answer = answers.map(entry => {
+    switch (entry.type) {
+      case 'CNAME':
       case 'TXT':
         return {
-          'name'   : question.name,
-          'type'   : util.records['TXT'],
-          'class'  : entry['class'] || 1,
-          'ttl'    : entry.ttl || 30,
-          'data'   : entry.data || entry.txt || undefined
+          'name' : question.name,
+          'type' : 'string' === typeof entry.type ? util.records[entry.type] : entry.type,
+          'class': entry['class'] || 1,
+          'ttl'  : entry.ttl || 30,
+          'data' : entry.data || entry.txt || undefined
         };
       default:
         return {
@@ -52,11 +53,12 @@ util.compileAnswer = function (query, question, answer) {
 };
 
 util.filterRecords = function (records, question) {
+  let keep = ['NS', 'CNAME'];
   return records
-    .filter(record => ((record.type === 'NS') || ( util.records[record.type] === question.type)))
+    .filter(record => ((keep.indexOf(record.type) >= 0) || (util.records[record.type] === question.type)))
     .filter(record => question.name.lastIndexOf(record.nam) >= 0)
     .filter(record => question.name.lastIndexOf(record.nam) === (question.name.length - record.nam.length))
-    .sort( (left,right) => left.nam.length < right.nam.length ? 1 : ( left.nam.length > right.nam.length ) ? -1 : 0 )
+    .sort((left, right) => left.nam.length < right.nam.length ? 1 : (left.nam.length > right.nam.length) ? -1 : 0)
 };
 
 util.split = function( str ) {
@@ -64,5 +66,5 @@ util.split = function( str ) {
     .match(/"([^"]+)"|[^\s]+/g)
     .map( token => token.replace(/""/g,'"') )
     .map( token => ( token.substr(0,1) === '"' ) ? token.substr(1) : token )
-    .map( token => ( token.substr(-1) === '"' )  ? token.substr(0,token.length-1) : token );
+    .map( token => ( token.substr(-1)  === '"' ) ? token.substr(0,token.length-1) : token );
 };
